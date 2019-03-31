@@ -1,5 +1,11 @@
 package tdconv
 
+// TableSet is a struct of a set of tables.
+type TableSet struct {
+	Name   string
+	Tables []*Table
+}
+
 // Table is a struct of table.
 type Table struct {
 	Name        string

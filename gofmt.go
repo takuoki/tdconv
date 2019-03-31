@@ -41,6 +41,16 @@ func GoHeader(header string) GoFormatOption {
 	}
 }
 
+// Extension returns the extension of Go file.
+func (f *GoFormatter) Extension() string {
+	return "go"
+}
+
+// Header returns the header of Go file.
+func (f *GoFormatter) Header() string {
+	return f.header
+}
+
 // Fprint outputs the table definision as Go struct.
 func (f *GoFormatter) Fprint(w io.Writer, t *Table) {
 
@@ -48,7 +58,6 @@ func (f *GoFormatter) Fprint(w io.Writer, t *Table) {
 		return
 	}
 
-	fmt.Fprint(w, f.header)
 	fmt.Fprintf(w, "type %s struct {\n", f.structName(t.Name))
 
 	for _, c := range t.Columns {

@@ -101,6 +101,19 @@ func KeyNameFunc(f func(string) string) ParseOption {
 	}
 }
 
+// SetCommonColumns parses the common sheet values and sets them as common columns.
+func (p *Parser) SetCommonColumns(s *gsheets.Sheet) error {
+	if p != nil && len(p.commonColumns) > 0 {
+		return errors.New("the common columns are already set")
+	}
+	t, err := p.parse(s)
+	if err != nil {
+		return err
+	}
+	p.commonColumns = t.Columns
+	return nil
+}
+
 // Parse parses the sheet values to the table object.
 func (p *Parser) Parse(s *gsheets.Sheet) (*Table, error) {
 
@@ -168,17 +181,4 @@ func (p *Parser) parse(s *gsheets.Sheet) (*Table, error) {
 	}
 
 	return &t, nil
-}
-
-// SetCommonColumns parses the common sheet values and sets them as common columns.
-func (p *Parser) SetCommonColumns(s *gsheets.Sheet) error {
-	if p != nil && len(p.commonColumns) > 0 {
-		return errors.New("the common columns are already set")
-	}
-	t, err := p.parse(s)
-	if err != nil {
-		return err
-	}
-	p.commonColumns = t.Columns
-	return nil
 }
