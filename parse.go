@@ -42,7 +42,7 @@ func NewParser(options ...ParseOption) (*Parser, error) {
 		columnIndex:     clmconv.MustAtoi("H"),
 		columnOption:    clmconv.MustAtoi("I"),
 		columnComment:   clmconv.MustAtoi("J"),
-		boolString:      "○",
+		boolString:      "yes",
 		keyNameFunc: func(s string) string {
 			return s + "_key"
 		},
@@ -83,15 +83,36 @@ func StartRow(row int) ParseOption {
 	}
 }
 
+// BoolString changes the bool string in the sheet.
+func BoolString(str string) ParseOption {
+	return func(s *Parser) error {
+		s.boolString = str
+		return nil
+	}
+}
+
+// KeyNameFunc changes the function to convert the column name to the key name.
+func KeyNameFunc(f func(string) string) ParseOption {
+	return func(s *Parser) error {
+		s.keyNameFunc = f
+		return nil
+	}
+}
+
 // Parse parse the sheet values to the table object.
-func (sp *Parser) Parse(s *gsheets.Sheet) *Table {
+func (sp *Parser) Parse(s *gsheets.Sheet) (*Table, error) {
 
 	if sp == nil {
-		return nil
+		return nil, nil
+	}
+
+	tableName := s.Value(sp.rowTableName, sp.columnTableName)
+	if tableName == "" {
+		return nil, errors.New("table name is required")
 	}
 
 	t := Table{
-		Name:        s.Value(sp.rowTableName, sp.columnTableName),
+		Name:        tableName,
 		Columns:     make([]Column, 0, 16),
 		PKeyColumns: make([]string, 0, 4),
 	}
@@ -127,10 +148,18 @@ func (sp *Parser) Parse(s *gsheets.Sheet) *Table {
 		}
 	}
 
-	return &t
+	if len(t.Columns) == 0 {
+		return nil, errors.New("the length of table columns must not be zero")
+	}
+
+	return &t, nil
 }
 
 // ParseColumns parse the sheet values to the column object list.
-func (sp *Parser) ParseColumns(s *gsheets.Sheet) []Column {
-	return sp.Parse(s).Columns
+func (sp *Parser) ParseColumns(s *gsheets.Sheet) ([]Column, error) {
+	t, err := sp.Parse(s)
+	if err != nil {
+		return nil, err
+	}
+	return t.Columns, nil
 }
