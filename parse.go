@@ -24,15 +24,17 @@ type Parser struct {
 	columnComment int
 	boolString  string
 	keyNameFunc func(string) string
+
+	commonColumns []Column
 }
 
 // NewParser creates a new Parser.
 // You can change some parameters of the Parser with ParseOption.
 func NewParser(options ...ParseOption) (*Parser, error) {
-	sp := Parser{
+	p := Parser{
 		rowTableName:    1,
 		columnTableName: clmconv.MustAtoi("C"),
-		rowStart:        5,
+		rowStart:        4,
 		columnNo:        clmconv.MustAtoi("B"),
 		columnName:      clmconv.MustAtoi("C"),
 		columnType:      clmconv.MustAtoi("D"),
@@ -48,12 +50,12 @@ func NewParser(options ...ParseOption) (*Parser, error) {
 		},
 	}
 	for _, opt := range options {
-		err := opt(&sp)
+		err := opt(&p)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return &sp, nil
+	return &p, nil
 }
 
 // ParseOption changes some parameters of the Parser.
@@ -99,52 +101,61 @@ func KeyNameFunc(f func(string) string) ParseOption {
 	}
 }
 
-// Parse parse the sheet values to the table object.
-func (sp *Parser) Parse(s *gsheets.Sheet) (*Table, error) {
+// Parse parses the sheet values to the table object.
+func (p *Parser) Parse(s *gsheets.Sheet) (*Table, error) {
 
-	if sp == nil {
+	if p == nil {
 		return nil, nil
 	}
 
-	tableName := s.Value(sp.rowTableName, sp.columnTableName)
-	if tableName == "" {
+	if s.Value(p.rowTableName, p.columnTableName) == "" {
 		return nil, errors.New("table name is required")
 	}
 
+	return p.parse(s)
+}
+
+func (p *Parser) parse(s *gsheets.Sheet) (*Table, error) {
+
+	if p == nil {
+		return nil, nil
+	}
+
 	t := Table{
-		Name:        tableName,
+		Name:        s.Value(p.rowTableName, p.columnTableName),
 		Columns:     make([]Column, 0, 16),
 		PKeyColumns: make([]string, 0, 4),
 	}
 
 	for i, r := range s.Rows() {
 
-		if i < sp.rowStart {
+		if i < p.rowStart {
 			continue
 		}
-		if r.Value(sp.columnNo) == "" {
+		if r.Value(p.columnNo) == "" {
 			break
 		}
-		if r.Value(sp.columnType) == "" {
+		if r.Value(p.columnType) == "" {
 			continue
 		}
 
 		c := Column{
-			Name:    r.Value(sp.columnName),
-			Type:    r.Value(sp.columnType),
-			PKey:    r.Value(sp.columnPKey) == sp.boolString,
-			NotNull: r.Value(sp.columnNotNull) == sp.boolString,
-			Unique:  r.Value(sp.columnUnique) == sp.boolString,
-			Index:   r.Value(sp.columnIndex) == sp.boolString,
-			Option:  r.Value(sp.columnOption),
-			Comment: r.Value(sp.columnComment),
+			Name:    r.Value(p.columnName),
+			Type:    r.Value(p.columnType),
+			PKey:    r.Value(p.columnPKey) == p.boolString,
+			NotNull: r.Value(p.columnNotNull) == p.boolString,
+			Unique:  r.Value(p.columnUnique) == p.boolString,
+			Index:   r.Value(p.columnIndex) == p.boolString,
+			Option:  r.Value(p.columnOption),
+			Comment: r.Value(p.columnComment),
 		}
 		t.Columns = append(t.Columns, c)
+
 		if c.PKey {
 			t.PKeyColumns = append(t.PKeyColumns, c.Name)
 		}
 		if c.Index {
-			t.IndexKeys = append(t.IndexKeys, Key{Name: sp.keyNameFunc(c.Name), Columns: []string{c.Name}})
+			t.IndexKeys = append(t.IndexKeys, Key{Name: p.keyNameFunc(c.Name), Columns: []string{c.Name}})
 		}
 	}
 
@@ -152,14 +163,22 @@ func (sp *Parser) Parse(s *gsheets.Sheet) (*Table, error) {
 		return nil, errors.New("the length of table columns must not be zero")
 	}
 
+	if len(p.commonColumns) > 0 {
+		t.Columns = append(t.Columns, p.commonColumns...)
+	}
+
 	return &t, nil
 }
 
-// ParseColumns parse the sheet values to the column object list.
-func (sp *Parser) ParseColumns(s *gsheets.Sheet) ([]Column, error) {
-	t, err := sp.Parse(s)
-	if err != nil {
-		return nil, err
+// SetCommonColumns parses the common sheet values and sets them as common columns.
+func (p *Parser) SetCommonColumns(s *gsheets.Sheet) error {
+	if p != nil && len(p.commonColumns) > 0 {
+		return errors.New("the common columns are already set")
 	}
-	return t.Columns, nil
+	t, err := p.parse(s)
+	if err != nil {
+		return err
+	}
+	p.commonColumns = t.Columns
+	return nil
 }

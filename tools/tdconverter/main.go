@@ -35,6 +35,11 @@ func main() {
 			Value: "",
 			Usage: "sheet name of the table definitions sheet. if not specified, all sheets in the spreadsheet.",
 		},
+		cli.StringFlag{
+			Name:  "common, c",
+			Value: "",
+			Usage: "spreadsheet ID of the common columns sheet.",
+		},
 		cli.BoolFlag{
 			Name:  "multi, m",
 			Usage: "flag indicating whether to output multiple files.",
@@ -74,6 +79,17 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 	p, err := tdconv.NewParser()
 	if err != nil {
 		return fmt.Errorf("Unable to create new parser: %v", err)
+	}
+
+	if c.GlobalString("common") != "" {
+		s, err := gc.GetSheet(ctx, c.GlobalString("common"), "common")
+		if err != nil {
+			return fmt.Errorf("Unable to get common sheet values: %v", err)
+		}
+		err = p.SetCommonColumns(s)
+		if err != nil {
+			return fmt.Errorf("Unable to parse common sheet information: %v", err)
+		}
 	}
 
 	var tables []*tdconv.Table
