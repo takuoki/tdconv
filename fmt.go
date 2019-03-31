@@ -1,31 +1,45 @@
 package tdconv
 
 import (
-	"errors"
+	"fmt"
 	"io"
 	"os"
 )
 
 // Formatter is an interface for formatting.
 type Formatter interface {
+	Extension() string
+	Header() string
 	Fprint(w io.Writer, t *Table)
 }
 
 // Output outputs file(s) using Formatter.
-func Output(f Formatter, tables []*Table, multi bool, outdir, extension string) error {
+func Output(f Formatter, tableSet TableSet, multi bool, outdir string) error {
 
 	if !multi {
-		return errors.New("I'm sorry. Currently unsupported")
-	}
-
-	for _, t := range tables {
-		file, err := os.Create(outdir + "/" + t.Name + "." + extension)
-		if err != nil {
-			return err
+		output(f, tableSet.Tables, outdir+"/"+tableSet.Name+"."+f.Extension())
+	} else {
+		for i := 0; i < len(tableSet.Tables); i++ {
+			output(f, tableSet.Tables[i:i+1], outdir+"/"+tableSet.Tables[i].Name+"."+f.Extension())
 		}
-		defer file.Close()
-		f.Fprint(file, t)
 	}
 
+	return nil
+}
+
+func output(f Formatter, tables []*Table, filepath string) error {
+	file, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	fmt.Fprint(file, f.Header())
+	for i, t := range tables {
+		f.Fprint(file, t)
+		if i < len(tables)-1 {
+			fmt.Fprintln(file)
+		}
+	}
 	return nil
 }

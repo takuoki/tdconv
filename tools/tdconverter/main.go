@@ -66,6 +66,11 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 			"Is 'credentials.json' present correctly?: %v", err)
 	}
 
+	title, err := gc.GetTitle(ctx, c.GlobalString("sheetid"))
+	if err != nil {
+		return fmt.Errorf("Unable to get spreadsheet title: %v", err)
+	}
+
 	var sheets []string
 	if c.GlobalString("sheetname") != "" {
 		sheets = []string{c.GlobalString("sheetname")}
@@ -106,14 +111,15 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 	}
 
 	outdir := "./out/" + c.Command.Name
-	if _, err := os.Stat("./out"); err != nil {
+	if _, err := os.Stat("./out"); os.IsNotExist(err) {
 		os.Mkdir("./out", 0777)
 	}
-	if _, err := os.Stat(outdir); err != nil {
+	if _, err := os.Stat(outdir); os.IsNotExist(err) {
 		os.Mkdir(outdir, 0777)
 	}
 
-	if err = tdconv.Output(f, tables, c.GlobalBool("multi"), outdir, c.Command.Name); err != nil {
+	if err = tdconv.Output(f, tdconv.TableSet{Name: title, Tables: tables},
+		c.GlobalBool("multi"), outdir); err != nil {
 		return fmt.Errorf("Fail to output table definitions: %v", err)
 	}
 

@@ -38,6 +38,16 @@ func SQLHeader(header string) SQLFormatOption {
 	}
 }
 
+// Extension returns the extension of SQL file.
+func (f *SQLFormatter) Extension() string {
+	return "sql"
+}
+
+// Header returns the header of SQL file.
+func (f *SQLFormatter) Header() string {
+	return f.header
+}
+
 // Fprint outputs the table definision as SQL.
 func (f *SQLFormatter) Fprint(w io.Writer, t *Table) {
 
@@ -45,7 +55,6 @@ func (f *SQLFormatter) Fprint(w io.Writer, t *Table) {
 		return
 	}
 
-	fmt.Fprint(w, f.header)
 	fmt.Fprintf(w, "DROP TABLE IF EXISTS %[1]s;\nCREATE TABLE `%[1]s` (\n", t.Name)
 
 	for i, c := range t.Columns {
@@ -80,5 +89,5 @@ func (f *SQLFormatter) Fprint(w io.Writer, t *Table) {
 		fmt.Fprintf(w, ",\n    INDEX `%s` (%s)", k.Name, strings.Join(k.Columns, ", "))
 	}
 
-	fmt.Fprintf(w, "\n);")
+	fmt.Fprintln(w, "\n);")
 }
