@@ -68,6 +68,8 @@ github.com/takuoki/clmconv v0.0.0-20190328134931-5511da5233cf h1:AZ1CE2p6POfOfmV
 github.com/takuoki/clmconv v0.0.0-20190328134931-5511da5233cf/go.mod h1:g5my4loqBajQAnDp/3OOAYCJVoLI0+UoQCkcJZLY3JY=
 github.com/takuoki/gsheets v0.0.0-20190329145617-018cdf086710 h1:7MntmK3StcIVzE9Vg+3iu3uG8DLSDphryBLLb0hYPBs=
 github.com/takuoki/gsheets v0.0.0-20190329145617-018cdf086710/go.mod h1:NZFwU/zq00ztdhBvHDqSkWDTziJmk8YRDEB+CqfxIz0=
+github.com/urfave/cli v1.20.0 h1:fDqGv3UG/4jbVl/QkFwEdddtEDjh/5Ov6X+0B/3bPaw=
+github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 go.opencensus.io v0.19.1/go.mod h1:gug0GbSHa8Pafr0d2urOSgoXHZ6x/RUlaiT0d9pqb4A=
 go.opencensus.io v0.19.2 h1:ZZpq6xI6kv/LuE/5s5UQvBU5vMjvRnPb8PvJrIntAnc=
 go.opencensus.io v0.19.2/go.mod h1:NO/8qkisMZLZ1FCsKNqtJPwc8/TaclWyY0B6wcYNg9M=
