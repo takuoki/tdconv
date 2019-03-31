@@ -48,7 +48,7 @@ func (f *SQLFormatter) Fprint(w io.Writer, t *Table) {
 	fmt.Fprint(w, f.header)
 	fmt.Fprintf(w, "DROP TABLE IF EXISTS %[1]s;\nCREATE TABLE `%[1]s` (\n", t.Name)
 
-	for _, c := range t.Columns {
+	for i, c := range t.Columns {
 		es := make([]string, 0, 6)
 		es = append(es, "    `"+c.Name+"`")
 		es = append(es, c.Type)
@@ -64,16 +64,20 @@ func (f *SQLFormatter) Fprint(w io.Writer, t *Table) {
 		if c.Comment != "" {
 			es = append(es, "COMMENT '"+c.Comment+"'")
 		}
-		fmt.Fprintf(w, "%s,\n", strings.Join(es, " "))
+		fmt.Fprint(w, strings.Join(es, " "))
+		if i < len(t.Columns)-1 {
+			fmt.Fprint(w, ",\n")
+		}
 	}
 
-	fmt.Fprintf(w, "    PRIMARY KEY (%s)", strings.Join(t.PKeyColumns, ", "))
-
+	if len(t.PKeyColumns) > 0 {
+		fmt.Fprintf(w, ",\n    PRIMARY KEY (%s)", strings.Join(t.PKeyColumns, ", "))
+	}
 	for _, k := range t.UniqueKeys {
 		fmt.Fprintf(w, ",\n    UNIQUE KEY `%s` (%s)", k.Name, strings.Join(k.Columns, ", "))
 	}
 	for _, k := range t.IndexKeys {
-		fmt.Fprintf(w, ",\n    UNIQUE KEY `%s` (%s)", k.Name, strings.Join(k.Columns, ", "))
+		fmt.Fprintf(w, ",\n    INDEX `%s` (%s)", k.Name, strings.Join(k.Columns, ", "))
 	}
 
 	fmt.Fprintf(w, "\n);")

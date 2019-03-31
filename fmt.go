@@ -14,7 +14,7 @@ type Formatter interface {
 // Output outputs file(s) using Formatter.
 func Output(f Formatter, tables []*Table, multi bool, outdir, extension string) error {
 
-	if multi {
+	if !multi {
 		return errors.New("I'm sorry. Currently unsupported")
 	}
 
