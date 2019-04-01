@@ -19,10 +19,16 @@ type Formatter interface {
 func Output(f Formatter, tableSet TableSet, multi bool, outdir string) error {
 
 	if !multi {
-		output(f, tableSet.Tables, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(tableSet.Name), f.Extension()))
+		err := output(f, tableSet.Tables, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(tableSet.Name), f.Extension()))
+		if err != nil {
+			return err
+		}
 	} else {
 		for _, t := range tableSet.Tables {
-			output(f, []*Table{t}, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(t.Name), f.Extension()))
+			err := output(f, []*Table{t}, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(t.Name), f.Extension()))
+			if err != nil {
+				return err
+			}
 		}
 	}
 
