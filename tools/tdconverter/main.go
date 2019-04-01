@@ -118,7 +118,7 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 		os.Mkdir(outdir, 0777)
 	}
 
-	if err = tdconv.Output(f, tdconv.TableSet{Name: title, Tables: tables},
+	if err := tdconv.Output(f, tdconv.TableSet{Name: title, Tables: tables},
 		c.GlobalBool("multi"), outdir); err != nil {
 		return fmt.Errorf("Fail to output table definitions: %v", err)
 	}
