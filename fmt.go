@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/iancoleman/strcase"
 )
 
 // Formatter is an interface for formatting.
@@ -17,10 +19,10 @@ type Formatter interface {
 func Output(f Formatter, tableSet TableSet, multi bool, outdir string) error {
 
 	if !multi {
-		output(f, tableSet.Tables, outdir+"/"+tableSet.Name+"."+f.Extension())
+		output(f, tableSet.Tables, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(tableSet.Name), f.Extension()))
 	} else {
-		for i := 0; i < len(tableSet.Tables); i++ {
-			output(f, tableSet.Tables[i:i+1], outdir+"/"+tableSet.Tables[i].Name+"."+f.Extension())
+		for _, t := range tableSet.Tables {
+			output(f, []*Table{t}, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(t.Name), f.Extension()))
 		}
 	}
 

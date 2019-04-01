@@ -64,10 +64,10 @@ github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqn
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
-github.com/takuoki/clmconv v0.0.0-20190328134931-5511da5233cf h1:AZ1CE2p6POfOfmVc06Zoq7Dls+iBSeAjqrdeoCmxLGY=
-github.com/takuoki/clmconv v0.0.0-20190328134931-5511da5233cf/go.mod h1:g5my4loqBajQAnDp/3OOAYCJVoLI0+UoQCkcJZLY3JY=
-github.com/takuoki/gsheets v0.0.0-20190329145617-018cdf086710 h1:7MntmK3StcIVzE9Vg+3iu3uG8DLSDphryBLLb0hYPBs=
-github.com/takuoki/gsheets v0.0.0-20190329145617-018cdf086710/go.mod h1:NZFwU/zq00ztdhBvHDqSkWDTziJmk8YRDEB+CqfxIz0=
+github.com/takuoki/clmconv v0.0.0-20190401010911-f8c3a5072416 h1:31HpywHNaMz14FrRxFDNyiptZ/lq8Mz7n4IuPW0BD6I=
+github.com/takuoki/clmconv v0.0.0-20190401010911-f8c3a5072416/go.mod h1:g5my4loqBajQAnDp/3OOAYCJVoLI0+UoQCkcJZLY3JY=
+github.com/takuoki/gsheets v0.0.0-20190331132826-a7794200d6d4 h1:wE2QbagC3cqW4vknwlfj7R4O4UGXhsWJDfuDEjWp6Ac=
+github.com/takuoki/gsheets v0.0.0-20190331132826-a7794200d6d4/go.mod h1:NZFwU/zq00ztdhBvHDqSkWDTziJmk8YRDEB+CqfxIz0=
 github.com/urfave/cli v1.20.0 h1:fDqGv3UG/4jbVl/QkFwEdddtEDjh/5Ov6X+0B/3bPaw=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 go.opencensus.io v0.19.1/go.mod h1:gug0GbSHa8Pafr0d2urOSgoXHZ6x/RUlaiT0d9pqb4A=

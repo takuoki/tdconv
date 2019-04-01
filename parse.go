@@ -106,7 +106,7 @@ func (p *Parser) SetCommonColumns(s *gsheets.Sheet) error {
 	if p != nil && len(p.commonColumns) > 0 {
 		return errors.New("the common columns are already set")
 	}
-	t, err := p.parse(s)
+	t, err := p.parse(s, true)
 	if err != nil {
 		return err
 	}
@@ -125,10 +125,10 @@ func (p *Parser) Parse(s *gsheets.Sheet) (*Table, error) {
 		return nil, errors.New("table name is required")
 	}
 
-	return p.parse(s)
+	return p.parse(s, false)
 }
 
-func (p *Parser) parse(s *gsheets.Sheet) (*Table, error) {
+func (p *Parser) parse(s *gsheets.Sheet, common bool) (*Table, error) {
 
 	if p == nil {
 		return nil, nil
@@ -153,14 +153,15 @@ func (p *Parser) parse(s *gsheets.Sheet) (*Table, error) {
 		}
 
 		c := Column{
-			Name:    r.Value(p.columnName),
-			Type:    r.Value(p.columnType),
-			PKey:    r.Value(p.columnPKey) == p.boolString,
-			NotNull: r.Value(p.columnNotNull) == p.boolString,
-			Unique:  r.Value(p.columnUnique) == p.boolString,
-			Index:   r.Value(p.columnIndex) == p.boolString,
-			Option:  r.Value(p.columnOption),
-			Comment: r.Value(p.columnComment),
+			Name:     r.Value(p.columnName),
+			Type:     r.Value(p.columnType),
+			PKey:     r.Value(p.columnPKey) == p.boolString,
+			NotNull:  r.Value(p.columnNotNull) == p.boolString,
+			Unique:   r.Value(p.columnUnique) == p.boolString,
+			Index:    r.Value(p.columnIndex) == p.boolString,
+			Option:   r.Value(p.columnOption),
+			Comment:  r.Value(p.columnComment),
+			IsCommon: common,
 		}
 		t.Columns = append(t.Columns, c)
 

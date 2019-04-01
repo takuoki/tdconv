@@ -17,14 +17,15 @@ type Table struct {
 
 // Column is a struct of Column.
 type Column struct {
-	Name    string
-	Type    string
-	PKey    bool
-	NotNull bool
-	Unique  bool
-	Index   bool
-	Option  string
-	Comment string
+	Name     string
+	Type     string
+	PKey     bool
+	NotNull  bool
+	Unique   bool
+	Index    bool
+	Option   string
+	Comment  string
+	IsCommon bool
 }
 
 // Key is a struct of Key like Unique Key and Index Key.
