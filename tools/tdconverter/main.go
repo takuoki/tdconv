@@ -60,6 +60,11 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 		return err
 	}
 
+	am, err := getAliasMap()
+	if err != nil {
+		return err
+	}
+
 	ctx := context.Background()
 
 	gc, err := gsheets.NewForCLI(ctx, "credentials.json")
@@ -68,8 +73,12 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 			"Is 'credentials.json' present correctly?: %v", err)
 	}
 
-	ts, err := parse(ctx, gc, c.GlobalString("sheetid"),
-		c.GlobalString("sheetname"), c.GlobalString("common"))
+	sheetid := c.GlobalString("sheetid")
+	if s, ok := am[sheetid]; ok {
+		sheetid = s
+	}
+
+	ts, err := parse(ctx, gc, sheetid, c.GlobalString("sheetname"), c.GlobalString("common"))
 	if err != nil {
 		return err
 	}
@@ -91,6 +100,21 @@ func validate(c *cli.Context) error {
 	}
 
 	return nil
+}
+
+func getAliasMap() (map[string]string, error) {
+
+	conf, err := readConfig()
+	if err != nil {
+		switch err.(type) {
+		case *unableToReadConfigError:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+
+	return conf.AliasMap(), nil
 }
 
 func parse(ctx context.Context, gc *gsheets.Client, id, sheet, common string) (*tdconv.TableSet, error) {
