@@ -10,7 +10,7 @@ type config struct {
 	Sheets []struct {
 		Name          string `json:"name"`
 		Alias         string `json:"alias"`
-		SpreadsheetID string `json:"spreadsheetId"`
+		SpreadsheetID string `json:"spreadsheet_id"`
 	} `json:"sheets"`
 }
 
