@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli"
 )
 
@@ -23,11 +25,16 @@ func init() {
 				}
 			}
 
-			fmt.Println("Alias:\tSpreadsheetID")
-			fmt.Println("--------------------")
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Name", "Alias", "Spreadsheet ID"})
+			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			table.SetAlignment(tablewriter.ALIGN_LEFT)
+			table.SetCenterSeparator("-")
+			table.SetBorder(false)
 			for _, s := range conf.Sheets {
-				fmt.Printf("%s:\t%s\n", s.Alias, s.SpreadsheetID)
+				table.Append([]string{s.Name, s.Alias, s.SpreadsheetID})
 			}
+			table.Render()
 			return nil
 		},
 	})
