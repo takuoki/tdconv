@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/takuoki/gocase"
 )
 
 const (
@@ -89,21 +90,15 @@ func (f *GoFormatter) Fprint(w io.Writer, t *Table) {
 		return
 	}
 
-	fmt.Fprintf(w, "type %s struct {\n", f.structName(t.Name))
+	structName := gocase.To(strcase.ToLowerCamel(t.Name))
+	fmt.Fprintf(w, "type %s struct {\n", structName)
 
 	for _, c := range t.Columns {
-		fmt.Fprintf(w, "\t%s %s\n", f.propertyName(c.Name), f.convType(c.Type))
+		propertyName := gocase.To(strcase.ToCamel(c.Name))
+		fmt.Fprintf(w, "\t%s %s\n", propertyName, f.convType(c.Type))
 	}
 
 	fmt.Fprintln(w, "}")
-}
-
-func (f *GoFormatter) structName(s string) string {
-	return strcase.ToLowerCamel(s)
-}
-
-func (f *GoFormatter) propertyName(s string) string {
-	return f.convWords(strcase.ToCamel(s))
 }
 
 var tRegexp = regexp.MustCompile("^([a-zA-Z]+)[ (]{1}.*$")
@@ -121,19 +116,8 @@ func (f *GoFormatter) convType(t string) string {
 		r = "*bool"
 	case "TIMESTAMP", "DATE", "TIME":
 		r = "*time.Time"
-	case "DECIMAL":
-		r = "*decimal.Decimal"
 	default:
 		r = "UNKNOWN"
 	}
 	return r
-}
-
-func (f *GoFormatter) convWords(s string) string {
-	s = strings.Replace(s, "Id", "ID", -1)
-	s = strings.Replace(s, "Ip", "IP", -1)
-	s = strings.Replace(s, "Api", "API", -1)
-	s = strings.Replace(s, "Url", "URL", -1)
-	s = strings.Replace(s, "Http", "HTTP", -1)
-	return s
 }
