@@ -37,7 +37,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "common, c",
-			Value: "",
+			Value: "1MWfimYqzTtHwuw4i8JCZZwDnsvLCBVQGiOyMpH8-2IQ",
 			Usage: "spreadsheet ID of the common columns sheet.",
 		},
 		cli.BoolFlag{
@@ -55,62 +55,99 @@ func main() {
 
 func run(c *cli.Context, f tdconv.Formatter) error {
 
-	if c.GlobalString("sheetid") == "" {
-		return errors.New("Global option 'sheetid' is required")
+	err := validate(c)
+	if err != nil {
+		return err
 	}
 
 	ctx := context.Background()
+
 	gc, err := gsheets.NewForCLI(ctx, "credentials.json")
 	if err != nil {
 		return fmt.Errorf("Unable to create a google sheet client. "+
 			"Is 'credentials.json' present correctly?: %v", err)
 	}
 
-	title, err := gc.GetTitle(ctx, c.GlobalString("sheetid"))
+	ts, err := parse(ctx, gc, c.GlobalString("sheetid"),
+		c.GlobalString("sheetname"), c.GlobalString("common"))
 	if err != nil {
-		return fmt.Errorf("Unable to get spreadsheet title: %v", err)
+		return err
+	}
+
+	err = output(f, c.Command.Name, ts, c.GlobalBool("multi"))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("complete!")
+
+	return nil
+}
+
+func validate(c *cli.Context) error {
+
+	if c.GlobalString("sheetid") == "" {
+		return errors.New("Global option 'sheetid' is required")
+	}
+
+	return nil
+}
+
+func parse(ctx context.Context, gc *gsheets.Client, id, sheet, common string) (*tdconv.TableSet, error) {
+
+	title, err := gc.GetTitle(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get spreadsheet title: %v", err)
 	}
 
 	var sheets []string
-	if c.GlobalString("sheetname") != "" {
-		sheets = []string{c.GlobalString("sheetname")}
+	if sheet != "" {
+		sheets = []string{sheet}
 	} else {
-		sheets, err = gc.GetSheetNames(ctx, c.GlobalString("sheetid"))
+		sheets, err = gc.GetSheetNames(ctx, id)
 		if err != nil {
-			return fmt.Errorf("Unable to get all sheet names using spreadsheet id: %v", err)
+			return nil, fmt.Errorf("Unable to get all sheet names using spreadsheet id: %v", err)
 		}
 	}
 
 	p, err := tdconv.NewParser()
 	if err != nil {
-		return fmt.Errorf("Unable to create new parser: %v", err)
+		return nil, fmt.Errorf("Unable to create new parser: %v", err)
 	}
 
-	if c.GlobalString("common") != "" {
-		s, err := gc.GetSheet(ctx, c.GlobalString("common"), "common")
+	if common != "" {
+		s, err := gc.GetSheet(ctx, common, "common")
 		if err != nil {
-			return fmt.Errorf("Unable to get common sheet values: %v", err)
+			return nil, fmt.Errorf("Unable to get common sheet values: %v", err)
 		}
 		err = p.SetCommonColumns(s)
 		if err != nil {
-			return fmt.Errorf("Unable to parse common sheet information: %v", err)
+			return nil, fmt.Errorf("Unable to parse common sheet information: %v", err)
 		}
 	}
 
 	var tables []*tdconv.Table
 	for _, sheetname := range sheets {
-		s, err := gc.GetSheet(ctx, c.GlobalString("sheetid"), sheetname)
+		s, err := gc.GetSheet(ctx, id, sheetname)
 		if err != nil {
-			return fmt.Errorf("Unable to get sheet values (sheetname=%s): %v", sheetname, err)
+			return nil, fmt.Errorf("Unable to get sheet values (sheetname=%s): %v", sheetname, err)
 		}
 		t, err := p.Parse(s)
 		if err != nil {
-			return fmt.Errorf("Unable to parse sheet information (sheetname=%s): %v", sheetname, err)
+			return nil, fmt.Errorf("Unable to parse sheet information (sheetname=%s): %v", sheetname, err)
 		}
 		tables = append(tables, t)
 	}
 
-	outdir := "./out/" + c.Command.Name
+	return &tdconv.TableSet{
+		Name:   title,
+		Tables: tables,
+	}, nil
+}
+
+func output(f tdconv.Formatter, commandName string, ts *tdconv.TableSet, multi bool) error {
+
+	outdir := "./out/" + commandName
 	if _, err := os.Stat("./out"); os.IsNotExist(err) {
 		os.Mkdir("./out", 0777)
 	}
@@ -118,12 +155,9 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 		os.Mkdir(outdir, 0777)
 	}
 
-	if err := tdconv.Output(f, tdconv.TableSet{Name: title, Tables: tables},
-		c.GlobalBool("multi"), outdir); err != nil {
+	if err := tdconv.Output(f, ts, multi, outdir); err != nil {
 		return fmt.Errorf("Fail to output table definitions: %v", err)
 	}
-
-	fmt.Println("complete!")
 
 	return nil
 }

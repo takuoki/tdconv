@@ -1,6 +1,7 @@
 package tdconv
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -10,22 +11,22 @@ import (
 
 // Formatter is an interface for formatting.
 type Formatter interface {
-	Header() func(w io.Writer, tableSet TableSet)
+	Header() func(w io.Writer, tableSet *TableSet)
 	TableHeader() func(w io.Writer, table *Table)
 	TableFooter() func(w io.Writer, table *Table)
-	Footer() func(w io.Writer, tableSet TableSet)
+	Footer() func(w io.Writer, tableSet *TableSet)
 	Extension() string
 	Fprint(w io.Writer, t *Table)
 }
 
 type formatter struct {
-	header      func(w io.Writer, tableSet TableSet)
+	header      func(w io.Writer, tableSet *TableSet)
 	tableHeader func(w io.Writer, table *Table)
 	tableFooter func(w io.Writer, table *Table)
-	footer      func(w io.Writer, tableSet TableSet)
+	footer      func(w io.Writer, tableSet *TableSet)
 }
 
-func (f *formatter) Header() func(w io.Writer, tableSet TableSet) {
+func (f *formatter) Header() func(w io.Writer, tableSet *TableSet) {
 	return f.header
 }
 
@@ -37,11 +38,11 @@ func (f *formatter) TableFooter() func(w io.Writer, table *Table) {
 	return f.tableFooter
 }
 
-func (f *formatter) Footer() func(w io.Writer, tableSet TableSet) {
+func (f *formatter) Footer() func(w io.Writer, tableSet *TableSet) {
 	return f.footer
 }
 
-func (f *formatter) setHeader(fc func(w io.Writer, tableSet TableSet)) {
+func (f *formatter) setHeader(fc func(w io.Writer, tableSet *TableSet)) {
 	f.header = fc
 }
 
@@ -53,12 +54,16 @@ func (f *formatter) setTableFooter(fc func(w io.Writer, table *Table)) {
 	f.tableFooter = fc
 }
 
-func (f *formatter) setFooter(fc func(w io.Writer, tableSet TableSet)) {
+func (f *formatter) setFooter(fc func(w io.Writer, tableSet *TableSet)) {
 	f.footer = fc
 }
 
 // Output outputs file(s) using Formatter.
-func Output(f Formatter, tableSet TableSet, multi bool, outdir string) error {
+func Output(f Formatter, tableSet *TableSet, multi bool, outdir string) error {
+
+	if tableSet == nil {
+		return errors.New("table set is nil")
+	}
 
 	if !multi {
 		err := output(f, tableSet, 0, len(tableSet.Tables), fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(tableSet.Name), f.Extension()))
@@ -77,7 +82,7 @@ func Output(f Formatter, tableSet TableSet, multi bool, outdir string) error {
 	return nil
 }
 
-func output(f Formatter, tableSet TableSet, from, to int, filepath string) error {
+func output(f Formatter, tableSet *TableSet, from, to int, filepath string) error {
 	file, err := os.Create(filepath)
 	if err != nil {
 		return err
