@@ -10,22 +10,22 @@ import (
 
 // Formatter is an interface for formatting.
 type Formatter interface {
-	Header() func(w io.Writer, tables []*Table)
+	Header() func(w io.Writer, tableSet TableSet)
 	TableHeader() func(w io.Writer, table *Table)
 	TableFooter() func(w io.Writer, table *Table)
-	Footer() func(w io.Writer, tables []*Table)
+	Footer() func(w io.Writer, tableSet TableSet)
 	Extension() string
 	Fprint(w io.Writer, t *Table)
 }
 
 type formatter struct {
-	header      func(w io.Writer, tables []*Table)
+	header      func(w io.Writer, tableSet TableSet)
 	tableHeader func(w io.Writer, table *Table)
 	tableFooter func(w io.Writer, table *Table)
-	footer      func(w io.Writer, tables []*Table)
+	footer      func(w io.Writer, tableSet TableSet)
 }
 
-func (f *formatter) Header() func(w io.Writer, tables []*Table) {
+func (f *formatter) Header() func(w io.Writer, tableSet TableSet) {
 	return f.header
 }
 
@@ -37,11 +37,11 @@ func (f *formatter) TableFooter() func(w io.Writer, table *Table) {
 	return f.tableFooter
 }
 
-func (f *formatter) Footer() func(w io.Writer, tables []*Table) {
+func (f *formatter) Footer() func(w io.Writer, tableSet TableSet) {
 	return f.footer
 }
 
-func (f *formatter) setHeader(fc func(w io.Writer, tables []*Table)) {
+func (f *formatter) setHeader(fc func(w io.Writer, tableSet TableSet)) {
 	f.header = fc
 }
 
@@ -53,7 +53,7 @@ func (f *formatter) setTableFooter(fc func(w io.Writer, table *Table)) {
 	f.tableFooter = fc
 }
 
-func (f *formatter) setFooter(fc func(w io.Writer, tables []*Table)) {
+func (f *formatter) setFooter(fc func(w io.Writer, tableSet TableSet)) {
 	f.footer = fc
 }
 
@@ -61,13 +61,13 @@ func (f *formatter) setFooter(fc func(w io.Writer, tables []*Table)) {
 func Output(f Formatter, tableSet TableSet, multi bool, outdir string) error {
 
 	if !multi {
-		err := output(f, tableSet.Tables, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(tableSet.Name), f.Extension()))
+		err := output(f, tableSet, 0, len(tableSet.Tables), fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(tableSet.Name), f.Extension()))
 		if err != nil {
 			return err
 		}
 	} else {
-		for _, t := range tableSet.Tables {
-			err := output(f, []*Table{t}, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(t.Name), f.Extension()))
+		for i := 0; i < len(tableSet.Tables); i++ {
+			err := output(f, tableSet, i, i+1, fmt.Sprintf("%s/%s.%s", outdir, strcase.ToSnake(tableSet.Tables[i].Name), f.Extension()))
 			if err != nil {
 				return err
 			}
@@ -77,7 +77,7 @@ func Output(f Formatter, tableSet TableSet, multi bool, outdir string) error {
 	return nil
 }
 
-func output(f Formatter, tables []*Table, filepath string) error {
+func output(f Formatter, tableSet TableSet, from, to int, filepath string) error {
 	file, err := os.Create(filepath)
 	if err != nil {
 		return err
@@ -85,22 +85,22 @@ func output(f Formatter, tables []*Table, filepath string) error {
 	defer file.Close()
 
 	if fc := f.Header(); fc != nil {
-		fc(file, tables)
+		fc(file, tableSet)
 	}
-	for i, t := range tables {
+	for i := from; i < to; i++ {
 		if fc := f.TableHeader(); fc != nil {
-			fc(file, t)
+			fc(file, tableSet.Tables[i])
 		}
-		f.Fprint(file, t)
+		f.Fprint(file, tableSet.Tables[i])
 		if fc := f.TableFooter(); fc != nil {
-			fc(file, t)
+			fc(file, tableSet.Tables[i])
 		}
-		if i < len(tables)-1 {
+		if i < to-1 {
 			fmt.Fprintln(file)
 		}
 	}
 	if fc := f.Footer(); fc != nil {
-		fc(file, tables)
+		fc(file, tableSet)
 	}
 	return nil
 }
