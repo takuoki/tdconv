@@ -51,7 +51,7 @@ func readConfig() (*config, error) {
 	am := map[string]struct{}{}
 	for _, s := range conf.Sheets {
 		if s.SpreadsheetID == "" {
-			return nil, fmt.Errorf("SpreadsheetID must not be emoty (%s): %v", s.Name)
+			return nil, fmt.Errorf("SpreadsheetID must not be empty (%s): %v", s.Name)
 		}
 		if _, ok := am[s.Alias]; ok {
 			return nil, fmt.Errorf("Alias must not be duplicated (%s): %v", s.Alias)
