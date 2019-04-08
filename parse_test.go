@@ -2,6 +2,7 @@ package tdconv_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/takuoki/gostr"
@@ -9,15 +10,181 @@ import (
 	"github.com/takuoki/tdconv"
 )
 
-func TestParser_Parse(t *testing.T) {
-
-	mustNewParser := func(options ...tdconv.ParseOption) *tdconv.Parser {
-		p, err := tdconv.NewParser(options...)
-		if err != nil {
-			panic(err)
-		}
-		return p
+var mustNewParser = func(options ...tdconv.ParseOption) *tdconv.Parser {
+	p, err := tdconv.NewParser(options...)
+	if err != nil {
+		panic(err)
 	}
+	return p
+}
+
+func TestNewParser(t *testing.T) {
+
+	cases := []struct {
+		caseName string
+		opts     []tdconv.ParseOption
+		errMsg   string
+	}{
+		{
+			caseName: "success: default",
+		},
+		{
+			caseName: "failure: TableNamePos row",
+			opts:     []tdconv.ParseOption{tdconv.TableNamePos(5, "C")},
+			errMsg:   "Table name row must be smaller than the start row",
+		},
+		{
+			caseName: "failure: TableNamePos column",
+			opts:     []tdconv.ParseOption{tdconv.TableNamePos(1, "!")},
+			errMsg:   "Unable to convert column string",
+		},
+		{
+			caseName: "failure: StartRow",
+			opts:     []tdconv.ParseOption{tdconv.StartRow(0)},
+			errMsg:   "Start row must be greater than the table name row",
+		},
+		{
+			caseName: "failure: TableNamePos -> StartRow",
+			opts:     []tdconv.ParseOption{tdconv.TableNamePos(3, "C"), tdconv.StartRow(2)},
+			errMsg:   "Start row must be greater than the table name row",
+		},
+		{
+			caseName: "failure: StartRow -> TableNamePos",
+			opts:     []tdconv.ParseOption{tdconv.StartRow(2), tdconv.TableNamePos(3, "C")},
+			errMsg:   "Table name row must be smaller than the start row",
+		},
+		{
+			caseName: "failure: KeyNameFunc",
+			opts:     []tdconv.ParseOption{tdconv.KeyNameFunc(nil)},
+			errMsg:   "Key name function must not be nil",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.caseName, func(t *testing.T) {
+			_, err := tdconv.NewParser(c.opts...)
+
+			if c.errMsg == "" {
+				if err != nil {
+					t.Errorf("error must not occur: %v", err)
+					return
+				}
+			} else {
+				if err == nil {
+					t.Errorf("error must occur")
+					return
+				}
+				if endIndex := strings.Index(err.Error(), ":"); endIndex < 0 {
+					if err.Error() != c.errMsg {
+						t.Errorf("error message doesn't match (expected=%s, actual=%s)", c.errMsg, err.Error())
+						return
+					}
+				} else if err.Error()[:endIndex] != c.errMsg {
+					t.Errorf("error message doesn't match (expected=%s, actual=%s)", c.errMsg, err.Error()[:endIndex])
+					return
+				}
+			}
+		})
+	}
+}
+
+func TestParser_SetCommonColumns(t *testing.T) {
+
+	cases := []struct {
+		caseName   string
+		p          *tdconv.Parser
+		commons    [][]interface{}
+		doubleCall bool
+		errMsg     string
+	}{
+		{
+			caseName: "success:nil parser",
+			p:        nil,
+		},
+		{
+			caseName: "success:default parser",
+			p:        mustNewParser(),
+			commons: [][]interface{}{
+				row(t, "1", "created_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP", ""),
+				row(t, "2", "updated_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", ""),
+				row(t, "3", "deleted_at", "TIMESTAMP NULL", "no", "no", "no", "no", "", ""),
+			},
+		},
+		{
+			caseName: "success:change start row",
+			p:        mustNewParser(tdconv.StartRow(5)),
+			commons: [][]interface{}{
+				row(t, "1", "created_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP", ""),
+				row(t, "2", "updated_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", ""),
+				row(t, "3", "deleted_at", "TIMESTAMP NULL", "no", "no", "no", "no", "", ""),
+			},
+		},
+		{
+			caseName: "failure:double call",
+			p:        mustNewParser(),
+			commons: [][]interface{}{
+				row(t, "1", "created_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP", ""),
+				row(t, "2", "updated_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", ""),
+				row(t, "3", "deleted_at", "TIMESTAMP NULL", "no", "no", "no", "no", "", ""),
+			},
+			doubleCall: true,
+			errMsg:     "The common columns are already set",
+		},
+		{
+			caseName: "failure:has PK",
+			p:        mustNewParser(),
+			commons: [][]interface{}{
+				row(t, "1", "created_at", "TIMESTAMP NULL", "yes", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP", ""),
+				row(t, "2", "updated_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", ""),
+				row(t, "3", "deleted_at", "TIMESTAMP NULL", "no", "no", "no", "no", "", ""),
+			},
+			errMsg: "The common column must not be PK",
+		},
+		{
+			caseName: "failure:has index",
+			p:        mustNewParser(),
+			commons: [][]interface{}{
+				row(t, "1", "created_at", "TIMESTAMP NULL", "no", "no", "no", "yes", "DEFAULT CURRENT_TIMESTAMP", ""),
+				row(t, "2", "updated_at", "TIMESTAMP NULL", "no", "no", "no", "no", "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", ""),
+				row(t, "3", "deleted_at", "TIMESTAMP NULL", "no", "no", "no", "no", "", ""),
+			},
+			errMsg: "The common column must not have index",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.caseName, func(t *testing.T) {
+			cs := sheet(t, c.p, "", c.commons...)
+			err := c.p.SetCommonColumns(cs)
+			if c.doubleCall {
+				err = c.p.SetCommonColumns(cs)
+			}
+
+			if c.errMsg == "" {
+				if err != nil {
+					t.Errorf("error must not occur: %v", err)
+					return
+				}
+			} else {
+				if err == nil {
+					t.Errorf("error must occur")
+					return
+				}
+				if endIndex := strings.Index(err.Error(), ":"); endIndex < 0 {
+					if err.Error() != c.errMsg {
+						t.Errorf("error message doesn't match (expected=%s, actual=%s)", c.errMsg, err.Error())
+						return
+					}
+				} else if err.Error()[:endIndex] != c.errMsg {
+					t.Errorf("error message doesn't match (expected=%s, actual=%s)", c.errMsg, err.Error()[:endIndex])
+					return
+				}
+			}
+		})
+	}
+}
+
+func TestParser_Parse(t *testing.T) {
 
 	cases := []struct {
 		caseName      string
@@ -39,10 +206,10 @@ func TestParser_Parse(t *testing.T) {
 			rows: [][]interface{}{
 				row(t, "1", "id", "INT UNSIGNED", "yes", "yes", "no", "no", "AUTO_INCREMENT", "this is id!"),
 				row(t, "2", "foo", "VARCHAR(32)", "no", "yes", "yes", "no", "", ""),
-				row(t, "3", "this row is ignored", "", "no", "no", "no", "no", "", ""),
+				row(t, "3", "abc", "", "no", "no", "no", "no", "", "this row is ignored"),
 				row(t, "4", "bar", "VARCHAR(32)", "no", "no", "no", "yes", "", ""),
-				row(t, "", "this row is the end", "VARCHAR(32)", "no", "no", "no", "no", "", ""),
-				row(t, "6", "this row is unreachable", "VARCHAR(32)", "no", "no", "no", "no", "", ""),
+				row(t, "", "xyz", "VARCHAR(32)", "no", "no", "no", "no", "", "this row is the end"),
+				row(t, "6", "zzz", "VARCHAR(32)", "no", "no", "no", "no", "", "this row is unreachable"),
 			},
 			expected: &tdconv.Table{
 				Name: "sample_table",
@@ -191,7 +358,6 @@ func TestParser_Parse(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.caseName, func(t *testing.T) {
-			s := sheet(t, c.p, c.tableName, c.rows...)
 			if c.commons != nil {
 				cs := sheet(t, c.p, "", c.commons...)
 				if err := c.p.SetCommonColumns(cs); err != nil {
@@ -199,6 +365,7 @@ func TestParser_Parse(t *testing.T) {
 					return
 				}
 			}
+			s := sheet(t, c.p, c.tableName, c.rows...)
 			tb, err := c.p.Parse(s)
 
 			if c.errMsg == "" {
@@ -215,8 +382,13 @@ func TestParser_Parse(t *testing.T) {
 					t.Errorf("error must occur")
 					return
 				}
-				if err.Error() != c.errMsg {
-					t.Errorf("error message doesn't match (expected=%s, actual=%s)", c.errMsg, err.Error())
+				if endIndex := strings.Index(err.Error(), ":"); endIndex < 0 {
+					if err.Error() != c.errMsg {
+						t.Errorf("error message doesn't match (expected=%s, actual=%s)", c.errMsg, err.Error())
+						return
+					}
+				} else if err.Error()[:endIndex] != c.errMsg {
+					t.Errorf("error message doesn't match (expected=%s, actual=%s)", c.errMsg, err.Error()[:endIndex])
 					return
 				}
 			}
