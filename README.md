@@ -81,7 +81,7 @@ You can install this tool using `go get`.
 Before installing, enable the Go module feature.
 
 ```bash
-go get github.com/takuoki/tdconv/tools/tdconverter
+go get github.com/takuoki/tdconv
 ```
 
 ## <a name='Requirements'></a>Requirements
@@ -161,9 +161,9 @@ type Formatter interface {
 }
 ```
 
-* Fprint: Output table contents. This is main method of this interface.
-* Header: Output the header. This method is called only once for each file.
-* TableHeader: Output the table headers. This method is called before calling `Fprint` method, and called multiple times if the `multi` flag is `false`.
-* TableFooter: Output the table footers. This method is called after calling `Fprint` method, and called multiple times if the `multi` flag is `false`.
-* Footer: Output the footer. This method is called only once for each file.
-* Extension: Return file extension.
+* `Fprint`: Output table contents. This is main method of this interface.
+* `Header`: Output the header. This method is called only once for each file.
+* `TableHeader`: Output the table headers. This method is called before calling `Fprint` method, and called multiple times if the `multi` flag is `false`.
+* `TableFooter`: Output the table footers. This method is called after calling `Fprint` method, and called multiple times if the `multi` flag is `false`.
+* `Footer`: Output the footer. This method is called only once for each file.
+* `Extension`: Return file extension.
