@@ -37,7 +37,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "common, c",
-			Value: "1MWfimYqzTtHwuw4i8JCZZwDnsvLCBVQGiOyMpH8-2IQ",
+			Value: "",
 			Usage: "spreadsheet ID of the common columns sheet.",
 		},
 		cli.BoolFlag{
