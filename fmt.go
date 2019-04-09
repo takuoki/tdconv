@@ -9,6 +9,14 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+var createFile func(name string) (io.WriteCloser, error)
+
+func init() {
+	createFile = func(name string) (io.WriteCloser, error) {
+		return os.Create(name)
+	}
+}
+
 // Formatter is an interface for formatting.
 type Formatter interface {
 	Header() func(w io.Writer, tableSet *TableSet)
@@ -62,7 +70,7 @@ func (f *formatter) setFooter(fc func(w io.Writer, tableSet *TableSet)) {
 func Output(f Formatter, tableSet *TableSet, multi bool, outdir string) error {
 
 	if tableSet == nil {
-		return errors.New("table set is nil")
+		return errors.New("Table set is nil")
 	}
 
 	if !multi {
@@ -83,7 +91,7 @@ func Output(f Formatter, tableSet *TableSet, multi bool, outdir string) error {
 }
 
 func output(f Formatter, tableSet *TableSet, from, to int, filepath string) error {
-	file, err := os.Create(filepath)
+	file, err := createFile(filepath)
 	if err != nil {
 		return err
 	}
@@ -107,5 +115,6 @@ func output(f Formatter, tableSet *TableSet, from, to int, filepath string) erro
 	if fc := f.Footer(); fc != nil {
 		fc(file, tableSet)
 	}
+
 	return nil
 }

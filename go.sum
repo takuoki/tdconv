@@ -70,8 +70,12 @@ github.com/takuoki/clmconv v1.0.0 h1:Y8aPOfMCybQSCj2Q278SIGPSE0BPLoLmuBhhAEiT95w
 github.com/takuoki/clmconv v1.0.0/go.mod h1:g5my4loqBajQAnDp/3OOAYCJVoLI0+UoQCkcJZLY3JY=
 github.com/takuoki/gocase v1.0.0 h1:gPwLJTWVm2T1kUiCsKirg/faaIUGVTI0FA3SYr75a44=
 github.com/takuoki/gocase v1.0.0/go.mod h1:QgOKJrbuJoDrtoKswBX1/Dw8mJrkOV9tbQZJaxaJ6zc=
+github.com/takuoki/gostr v0.0.0-20180826070049-ca8c73a0e8e2 h1:D56ip/PeJRWi+zFI0dJYpGLGcMk7rbjuVE2BvFQj6JQ=
+github.com/takuoki/gostr v0.0.0-20180826070049-ca8c73a0e8e2/go.mod h1:gXQrAJbsNTRjHQCmO2Bef+DDSdXF7ce8gIA0KmKC09Q=
 github.com/takuoki/gsheets v0.1.0 h1:AQeWq1rdOKDdkpkQUUj5T1zSxAzH2tjy6Etig8wn20k=
 github.com/takuoki/gsheets v0.1.0/go.mod h1:NZFwU/zq00ztdhBvHDqSkWDTziJmk8YRDEB+CqfxIz0=
+github.com/takuoki/gsheets v0.1.1 h1:/EvUxMivgVWAtTFxTeExrt58ouI6QM8LXdfEFbpFVZ4=
+github.com/takuoki/gsheets v0.1.1/go.mod h1:NZFwU/zq00ztdhBvHDqSkWDTziJmk8YRDEB+CqfxIz0=
 github.com/urfave/cli v1.20.0 h1:fDqGv3UG/4jbVl/QkFwEdddtEDjh/5Ov6X+0B/3bPaw=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 go.opencensus.io v0.19.1/go.mod h1:gug0GbSHa8Pafr0d2urOSgoXHZ6x/RUlaiT0d9pqb4A=
