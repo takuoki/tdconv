@@ -1,5 +1,9 @@
 package tdconv
 
+import (
+	"io"
+)
+
 func (p *Parser) TableNameRow() int {
 	if p == nil {
 		return 0
@@ -19,4 +23,12 @@ func (p *Parser) StartRow() int {
 		return 0
 	}
 	return p.startRow
+}
+
+func SetCreateFile(f func(name string) (io.WriteCloser, error)) (resetFunc func()) {
+	tmpFunc := createFile
+	createFile = f
+	return func() {
+		createFile = tmpFunc
+	}
 }

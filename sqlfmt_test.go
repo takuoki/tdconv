@@ -9,6 +9,14 @@ import (
 	"github.com/takuoki/tdconv"
 )
 
+var mustSQLFormatter = func(options ...tdconv.SQLFormatOption) *tdconv.SQLFormatter {
+	f, err := tdconv.NewSQLFormatter(options...)
+	if err != nil {
+		panic(err)
+	}
+	return f
+}
+
 func TestNewSQLFormatter(t *testing.T) {
 
 	errOptionFunc := func(*tdconv.SQLFormatter) error {
@@ -75,14 +83,6 @@ func TestSQLFormatter_Extension(t *testing.T) {
 }
 
 func TestSQLFormatter_Fprint(t *testing.T) {
-
-	mustSQLFormatter := func(options ...tdconv.SQLFormatOption) *tdconv.SQLFormatter {
-		f, err := tdconv.NewSQLFormatter(options...)
-		if err != nil {
-			panic(err)
-		}
-		return f
-	}
 
 	cases := []struct {
 		caseName string

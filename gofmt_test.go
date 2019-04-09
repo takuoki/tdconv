@@ -9,6 +9,14 @@ import (
 	"github.com/takuoki/tdconv"
 )
 
+var mustGoFormatter = func(options ...tdconv.GoFormatOption) *tdconv.GoFormatter {
+	f, err := tdconv.NewGoFormatter(options...)
+	if err != nil {
+		panic(err)
+	}
+	return f
+}
+
 func TestNewGoFormatter(t *testing.T) {
 
 	errOptionFunc := func(*tdconv.GoFormatter) error {
@@ -75,14 +83,6 @@ func TestGoFormatter_Extension(t *testing.T) {
 }
 
 func TestGoFormatter_Fprint(t *testing.T) {
-
-	mustGoFormatter := func(options ...tdconv.GoFormatOption) *tdconv.GoFormatter {
-		f, err := tdconv.NewGoFormatter(options...)
-		if err != nil {
-			panic(err)
-		}
-		return f
-	}
 
 	cases := []struct {
 		caseName string
