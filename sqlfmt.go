@@ -33,7 +33,7 @@ func NewSQLFormatter(options ...SQLFormatOption) (*SQLFormatter, error) {
 type SQLFormatOption func(*SQLFormatter) error
 
 // SQLHeader changes the header.
-func SQLHeader(fc func(w io.Writer, tableSet *TableSet)) SQLFormatOption {
+func SQLHeader(fc func(w io.Writer, ts *TableSet)) SQLFormatOption {
 	return func(f *SQLFormatter) error {
 		f.setHeader(fc)
 		return nil
@@ -41,7 +41,7 @@ func SQLHeader(fc func(w io.Writer, tableSet *TableSet)) SQLFormatOption {
 }
 
 // SQLTableHeader changes the header of each table.
-func SQLTableHeader(fc func(w io.Writer, table *Table)) SQLFormatOption {
+func SQLTableHeader(fc func(w io.Writer, t *Table)) SQLFormatOption {
 	return func(f *SQLFormatter) error {
 		f.setTableHeader(fc)
 		return nil
@@ -49,7 +49,7 @@ func SQLTableHeader(fc func(w io.Writer, table *Table)) SQLFormatOption {
 }
 
 // SQLTableFooter changes the footer of each table.
-func SQLTableFooter(fc func(w io.Writer, table *Table)) SQLFormatOption {
+func SQLTableFooter(fc func(w io.Writer, t *Table)) SQLFormatOption {
 	return func(f *SQLFormatter) error {
 		f.setTableFooter(fc)
 		return nil
@@ -57,7 +57,7 @@ func SQLTableFooter(fc func(w io.Writer, table *Table)) SQLFormatOption {
 }
 
 // SQLFooter changes the footer.
-func SQLFooter(fc func(w io.Writer, tableSet *TableSet)) SQLFormatOption {
+func SQLFooter(fc func(w io.Writer, ts *TableSet)) SQLFormatOption {
 	return func(f *SQLFormatter) error {
 		f.setFooter(fc)
 		return nil

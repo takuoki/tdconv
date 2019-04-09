@@ -4,6 +4,11 @@
       "name": "tdconverter-sample",
       "alias": "sample",
       "spreadsheet_id": "1B8iFPPfyx81Q_0YDzGMN-a6zIw82B0x583A1eqcg_xA"
+    },
+    {
+      "name": "tdconverter-common",
+      "alias": "common",
+      "spreadsheet_id": "1MWfimYqzTtHwuw4i8JCZZwDnsvLCBVQGiOyMpH8-2IQ"
     }
   ]
 }
