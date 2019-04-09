@@ -6,14 +6,18 @@ executors:
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/takuoki/tdconv
 
-# orbs:
-#   codecov: codecov/codecov@1.0.4
+orbs:
+  codecov: codecov/codecov@1.0.4
 
 jobs:
   build:
     executor: go-111
     steps:
       - checkout
+      - run:
+          name: Set env
+          command: |
+            echo 'export GO111MODULE=on' >> $BASH_ENV
       # golint
       - restore_cache:
           keys:
@@ -39,5 +43,5 @@ jobs:
           name: Testing
           command: |
             go test -v -race -cover -coverprofile=coverage.out ./...
-      # - codecov/upload:
-      #     file: ./coverage.out
+      - codecov/upload:
+          file: ./coverage.out
