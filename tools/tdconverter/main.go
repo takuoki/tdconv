@@ -78,7 +78,12 @@ func run(c *cli.Context, f tdconv.Formatter) error {
 		sheetid = s
 	}
 
-	ts, err := parse(ctx, gc, sheetid, c.GlobalString("sheetname"), c.GlobalString("common"))
+	common := c.GlobalString("common")
+	if s, ok := am[common]; ok {
+		common = s
+	}
+
+	ts, err := parse(ctx, gc, sheetid, c.GlobalString("sheetname"), common)
 	if err != nil {
 		return err
 	}
