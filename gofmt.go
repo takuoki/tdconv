@@ -39,7 +39,7 @@ func NewGoFormatter(options ...GoFormatOption) (*GoFormatter, error) {
 type GoFormatOption func(*GoFormatter) error
 
 // GoHeader changes the header.
-func GoHeader(fc func(w io.Writer, tableSet *TableSet)) GoFormatOption {
+func GoHeader(fc func(w io.Writer, ts *TableSet)) GoFormatOption {
 	return func(f *GoFormatter) error {
 		f.setHeader(fc)
 		return nil
@@ -47,7 +47,7 @@ func GoHeader(fc func(w io.Writer, tableSet *TableSet)) GoFormatOption {
 }
 
 // GoTableHeader changes the header of each table.
-func GoTableHeader(fc func(w io.Writer, table *Table)) GoFormatOption {
+func GoTableHeader(fc func(w io.Writer, t *Table)) GoFormatOption {
 	return func(f *GoFormatter) error {
 		f.setTableHeader(fc)
 		return nil
@@ -55,7 +55,7 @@ func GoTableHeader(fc func(w io.Writer, table *Table)) GoFormatOption {
 }
 
 // GoTableFooter changes the footer of each table.
-func GoTableFooter(fc func(w io.Writer, table *Table)) GoFormatOption {
+func GoTableFooter(fc func(w io.Writer, t *Table)) GoFormatOption {
 	return func(f *GoFormatter) error {
 		f.setTableFooter(fc)
 		return nil
@@ -63,7 +63,7 @@ func GoTableFooter(fc func(w io.Writer, table *Table)) GoFormatOption {
 }
 
 // GoFooter changes the footer.
-func GoFooter(fc func(w io.Writer, tableSet *TableSet)) GoFormatOption {
+func GoFooter(fc func(w io.Writer, ts *TableSet)) GoFormatOption {
 	return func(f *GoFormatter) error {
 		f.setFooter(fc)
 		return nil
